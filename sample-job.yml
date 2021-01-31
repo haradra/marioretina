@@ -1,0 +1,131 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cortario-retina
+  namespace: 2162979kproject
+spec:
+  backoffLimit: 0
+  template:        
+    metadata:
+      name: cortario-retina
+    spec:
+      containers:
+      - name: cortario-container  
+        # uncomment below if fresh pull of the image needed
+        # imagePullPolicy: Always 
+        image: haradra/cortario:v3
+        # cd into the folder and run the PPO training
+        # /nfs/ is equivalent of 2252756jvol1claim/
+        command: ["/bin/bash","-c","cd /nfs/MarioRet/marioretina && python PPO/train.py --saved_path cortario_retina --retina"]
+        resources:
+          # start container only if requests are met
+          requests:
+            # 1 physical CPU core = 1000m
+            cpu: "1000m" 
+            memory: "2Gi"
+            nvidia.com/gpu: 1 
+          # kill container if goes beyond the limits
+          limits:
+            cpu: "4000m" 
+            memory: "8Gi"
+            nvidia.com/gpu: 1 
+        # mount the external volume 'nfs-access' at the location /nfs inside this container
+        volumeMounts:
+        - mountPath: /nfs
+          name: nfs-access
+      volumes:
+      - name: nfs-access
+        persistentVolumeClaim: 
+          claimName: 2162979kvol1claim
+      # request specific GPU ("gpu2080ti" or "gputitan")
+      # nodeSelector:
+      #   node-role.ida/gpu2080ti: "true"
+      restartPolicy: Never
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mario-ppo
+  namespace: 2162979kproject
+spec:
+  backoffLimit: 0
+  template:        
+    metadata:
+      name: mario-ppo
+    spec:
+      containers:
+      - name: mario-ppo-container  
+        # uncomment below if fresh pull of the image needed
+        # imagePullPolicy: Always 
+        image: haradra/ppo:v1
+        # cd into the folder and run the PPO training
+        # /nfs/ is equivalent of 2252756jvol1claim/
+        command: ["/bin/bash","-c","cd /nfs/MarioPPO && python train.py --saved_path mario_ppo"]
+        resources:
+          # start container only if requests are met
+          requests:
+            # 1 physical CPU core = 1000m
+            cpu: "1000m" 
+            memory: "2Gi"
+            nvidia.com/gpu: 1 
+          # kill container if goes beyond the limits
+          limits:
+            cpu: "4000m" 
+            memory: "8Gi"
+            nvidia.com/gpu: 1 
+        # mount the external volume 'nfs-access' at the location /nfs inside this container
+        volumeMounts:
+        - mountPath: /nfs
+          name: nfs-access
+      volumes:
+      - name: nfs-access
+        persistentVolumeClaim: 
+          claimName: 2162979kvol1claim
+      # request specific GPU ("gpu2080ti" or "gputitan")
+      # nodeSelector:
+      #   node-role.ida/gpu2080ti: "true"
+      restartPolicy: Never
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mario-no-retina
+  namespace: 2162979kproject
+spec:
+  backoffLimit: 0
+  template:        
+    metadata:
+      name: mario-no-retina
+    spec:
+      containers:
+      - name: mario-no-retina-container  
+        # uncomment below if fresh pull of the image needed
+        # imagePullPolicy: Always 
+        image: haradra/mario-no-retina:v1
+        # cd into the folder and run the PPO training
+        # /nfs/ is equivalent of 2252756jvol1claim/
+        command: ["/bin/bash","-c","cd /nfs/MarioNoRetina/marioretina && python PPO/train.py --saved_path mario-no-retina"]
+        resources:
+          # start container only if requests are met
+          requests:
+            # 1 physical CPU core = 1000m
+            cpu: "1000m" 
+            memory: "2Gi"
+            nvidia.com/gpu: 1 
+          # kill container if goes beyond the limits
+          limits:
+            cpu: "4000m" 
+            memory: "8Gi"
+            nvidia.com/gpu: 1 
+        # mount the external volume 'nfs-access' at the location /nfs inside this container
+        volumeMounts:
+        - mountPath: /nfs
+          name: nfs-access
+      volumes:
+      - name: nfs-access
+        persistentVolumeClaim: 
+          claimName: 2162979kvol1claim
+      # request specific GPU ("gpu2080ti" or "gputitan")
+      # nodeSelector:
+      #   node-role.ida/gpu2080ti: "true"
+      restartPolicy: Never
